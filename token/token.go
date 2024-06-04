@@ -16,9 +16,15 @@ const (
 	INT   = "INT"
 
 	//Operators
-	PLUS   = "+"
-	ASSIGN = "="
-	MINUS  = '-'
+	PLUS     = "+"
+	ASSIGN   = "="
+	MINUS    = "-"
+	BANG     = "!"
+	SLASH    = "/"
+	ASTERISK = "*"
+
+	LT = "<"
+	GT = ">"
 
 	//DELIMETER
 	COMMA     = ","

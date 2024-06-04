@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"interpreter/token"
 )
 
@@ -21,7 +20,7 @@ func New(input string) *Lexer {
 // The purpose of readChar is to give us the next character and advance our position in the input
 // x`string.
 func (l *Lexer) readChar() {
-	if l.readPosition > len(l.input) {
+	if l.readPosition >= len(l.input) {
 		l.ch = 0 // ASCII for NUL
 	} else {
 		l.ch = l.input[l.readPosition]
@@ -33,7 +32,6 @@ func (l *Lexer) readChar() {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
-	fmt.Println(string(l.ch))
 
 	switch l.ch {
 	case '=':
@@ -52,6 +50,18 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '-':
+		tok = newToken(token.MINUS, l.ch)
+	case '*':
+		tok = newToken(token.ASTERISK, l.ch)
+	case '/':
+		tok = newToken(token.SLASH, l.ch)
+	case '<':
+		tok = newToken(token.LT, l.ch)
+	case '>':
+		tok = newToken(token.GT, l.ch)
+	case '!':
+		tok = newToken(token.BANG, l.ch)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -63,6 +73,7 @@ func (l *Lexer) NextToken() token.Token {
 		} else if isDigit(l.ch) {
 			tok.Literal = l.readDigit()
 			tok.Type = token.INT
+			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
