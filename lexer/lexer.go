@@ -29,59 +29,89 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+// NextToken returns the next token from the input string.
 func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
+	// Skip any whitespace characters.
 	l.skipWhitespace()
+	// Initialize an empty token.
+	tok := token.Token{}
 
+	// Switch statement to handle different characters.
 	switch l.ch {
-	case '=':
-		tok = newToken(token.ASSIGN, l.ch)
-	case ';':
-		tok = newToken(token.SEMICOLON, l.ch)
-	case '(':
-		tok = newToken(token.LPAREN, l.ch)
-	case ')':
-		tok = newToken(token.RPAREN, l.ch)
-	case ',':
-		tok = newToken(token.COMMA, l.ch)
-	case '+':
-		tok = newToken(token.PLUS, l.ch)
-	case '{':
-		tok = newToken(token.LBRACE, l.ch)
-	case '}':
-		tok = newToken(token.RBRACE, l.ch)
-	case '-':
-		tok = newToken(token.MINUS, l.ch)
-	case '*':
-		tok = newToken(token.ASTERISK, l.ch)
-	case '/':
-		tok = newToken(token.SLASH, l.ch)
-	case '<':
-		tok = newToken(token.LT, l.ch)
-	case '>':
-		tok = newToken(token.GT, l.ch)
+	case ';', '(', ')', ',', '+', '{', '}', '-', '*', '/':
+		// For single character tokens, create a new token with the corresponding type.
+		tok = newToken(token.TokenType(l.ch), l.ch)
+	case '<', '>':
+		// Handle comparison operators (e.g., <, >, <=, >=).
+		tok = handleComparison(l)
 	case '!':
-		tok = newToken(token.BANG, l.ch)
+		// Handle the not equals operator (!=).
+		tok = makeTwoCharToken(l, token.BANG, token.NOT_EQ)
+	case '=':
+		// Handle the equals operator (=, ==).
+		tok = makeTwoCharToken(l, token.ASSIGN, token.EQ)
 	case 0:
+		// End of file, set token type to EOF.
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(l.ch) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.LookupIdent(tok.Literal)
-			return tok
-		} else if isDigit(l.ch) {
-			tok.Literal = l.readDigit()
-			tok.Type = token.INT
-			return tok
-		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
-		}
+		// Handle identifiers and digits.
+		tok = handleIdentifierOrDigit(l)
 	}
 
+	// Move to the next character in the input string.
 	l.readChar()
 	return tok
+}
 
+// handleComparison handles comparison operators like <, >, <=, >=.
+func handleComparison(l *Lexer) token.Token {
+	var tok token.Token
+	// Check if the next character is '=' to determine the token type.
+	if l.peekChar() == '=' {
+		ch := l.ch
+		l.readChar()
+		// Create a token with the corresponding type and literal.
+		tok = token.Token{Type: token.TokenType(ch), Literal: string(ch) + string(l.ch)}
+	} else {
+		// For single character comparison operators, create a new token.
+		tok = newToken(token.TokenType(l.ch), l.ch)
+	}
+	return tok
+}
+
+// makeTwoCharToken handles comparison operators like != and ==.
+func makeTwoCharToken(l *Lexer, singleType token.TokenType, doubleType token.TokenType) token.Token {
+	var tok token.Token
+	// Check if the next character is '=' to determine the token type.
+	if l.peekChar() == '=' {
+		ch := l.ch
+		l.readChar()
+		// Create a token with the double type (e.g., EQ or NOT_EQ) and corresponding literal.
+		tok = token.Token{Type: doubleType, Literal: string(ch) + string(l.ch)}
+	} else {
+		// If the next character is not '=', create a token with the single type (e.g., BANG or ASSIGN).
+		tok = newToken(singleType, l.ch)
+	}
+	return tok
+}
+
+// handleIdentifierOrDigit handles identifiers and digits.
+func handleIdentifierOrDigit(l *Lexer) token.Token {
+	var tok token.Token
+	if isLetter(l.ch) {
+		// Read the identifier and lookup its type.
+		tok.Literal = l.readIdentifier()
+		tok.Type = token.LookupIdent(tok.Literal)
+	} else if isDigit(l.ch) {
+		// Read the digit and set token type to INT.
+		tok.Literal = l.readDigit()
+		tok.Type = token.INT
+	} else {
+		// If the character is not a letter or digit, create an ILLEGAL token.
+		tok = newToken(token.ILLEGAL, l.ch)
+	}
+	return tok
 }
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {
@@ -115,5 +145,13 @@ func isDigit(ch byte) bool {
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
+	}
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
 	}
 }
