@@ -10,6 +10,9 @@ import (
 
 const PROMT = ">>"
 
+// Start starts the Read-Eval-Print Loop (REPL) for the interpreter.
+// It takes an input reader and an output writer as parameters.
+// The function reads input from the reader, evaluates it, and prints the result to the writer.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 

@@ -90,6 +90,8 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+// readChar reads the next character from the input and updates the lexer's position.
+// If there are no more characters in the input, it sets the current character to 0.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
