@@ -3,16 +3,14 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"interpreter/evaluator"
 	"interpreter/lexer"
-	"interpreter/token"
+	"interpreter/parser"
 	"io"
 )
 
 const PROMT = ">>"
 
-// Start starts the Read-Eval-Print Loop (REPL) for the interpreter.
-// It takes an input reader and an output writer as parameters.
-// The function reads input from the reader, evaluates it, and prints the result to the writer.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
@@ -24,11 +22,27 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
-
 		l := lexer.New(line)
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%v\n", tok)
+		p := parser.New(l)
+
+		program := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
+		}
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
 		}
 
+	}
+}
+
+func printParserErrors(out io.Writer, errors []string) {
+	io.WriteString(out, "Woops! We ran into some monkey business here!\n")
+	io.WriteString(out, " parser errors:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
