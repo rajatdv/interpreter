@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"interpreter/token"
 	"testing"
 )
@@ -15,6 +14,8 @@ func TestNextToken(t *testing.T) {
 	let result = add(five, ten);
 	!-/*5 ;
 	5 < 10 > 5 ;
+	"foobar"
+	"foo bar"
 	`
 	tests := []struct {
 		expectedType    token.TokenType
@@ -68,12 +69,14 @@ func TestNextToken(t *testing.T) {
 		{token.GT, ">"},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
+		{token.EOF, ""},
 	}
 	l := New(input)
 
 	for i, tt := range tests {
 		tok := l.NextToken()
-		fmt.Println(tok)
 
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got = %q", i, tt.expectedType, tok.Type)
