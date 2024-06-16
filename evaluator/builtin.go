@@ -1,6 +1,9 @@
 package evaluator
 
-import "interpreter/object"
+import (
+	"fmt"
+	"interpreter/object"
+)
 
 var builtins map[string]*object.Builtin
 
@@ -163,6 +166,14 @@ func initBuiltins() {
 				}
 
 				return &object.Integer{Value: acc}
+			},
+		},
+		"puts": {
+			Fn: func(args ...object.Object) object.Object {
+				for _, arg := range args {
+					fmt.Println(arg.Inspect())
+				}
+				return NULL
 			},
 		},
 	}

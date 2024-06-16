@@ -32,6 +32,7 @@ const (
 	//DELIMETER
 	COMMA     = ","
 	SEMICOLON = ";"
+	COLON     = ":"
 
 	LPAREN   = "("
 	RPAREN   = ")"
